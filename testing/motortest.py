@@ -63,7 +63,7 @@ try:
 		write_voltage(aero, 0, 0)
 		time.sleep(1)
 		read_sensors(aero)
-		input(f"Motor speed: {2*np.pi*readOtherBuffer[6:8]/2048}\nPress ENTER to start motor tryout")
+		input(f"Press ENTER to start motor tryout")
 
 	except KeyboardInterrupt:
 		pass
@@ -72,24 +72,30 @@ try:
 		write_voltage(aero, 0, 0)
 		while True:
 			read_sensors(aero)
-			print(f"Motor speed: {2*np.pi*readOtherBuffer[6:8]/2048}\nInsert motor commands (between -999 and 999) or 'q' to quit")
+			print(f"Motor speed: [{2*np.pi*readOtherBuffer[6]/2048:03.0f} {2*np.pi*readOtherBuffer[7]/2048:03.0f}] rad/S")
+			print(f"Motor current: [{readAnalogBuffer[0]:04.2f} {readAnalogBuffer[1]:04.2f}] A")
+			print("Insert motor commands (between -999 and 999) or 'q' to quit")
 			cmd = input()
 			if cmd=='q':
 				break
+			elif len(cmd) == 0:
+				continue
 			elif not cmd.isdigit() and not (cmd[0]=='-' and cmd[1:].isdigit()):
 				print("Invalid command")
 				continue
 			cmd = int(cmd)
-			write_voltage(aero, cmd, cmd)		
+			write_voltage(aero, cmd, cmd)
 			time.sleep(2)
-
-		aero.write_other(WRITE_OTHER_CHANNELS, 3, red)
-		aero.close()
 
 	except KeyboardInterrupt:
 		pass
 
+	aero.write_other(WRITE_OTHER_CHANNELS, 3, red)
+	write_voltage(aero, 0, 0)
+	aero.close()
+
 except Exception as e:
 	aero.write_other(WRITE_OTHER_CHANNELS, 3, red)
+	write_voltage(aero, 0, 0)
 	aero.close()
-	print(e)
+	print("Exception caught: ", e)
