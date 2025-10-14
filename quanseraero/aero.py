@@ -2,11 +2,11 @@ from quanser.hardware import HIL, HILError, Clock
 from quanser.hardware.enumerations import BufferOverflowMode
 import numpy as np
 
-class Aero2():
+class Aero():
     """
-    Aero2 class for initialization, I/O, and termination.
+    Aero class for initialization, I/O, and termination.
 
-    This class provides an interface to configure and control the Aero2 platform.
+    This class provides an interface to configure and control the Quanser Aero platform.
     """
 
     # write channels
@@ -40,14 +40,14 @@ class Aero2():
 
     def __init__(self, id=0, hardware=0, readMode=1, frequency=500):
         """
-        Initializes and configures the Aero2 platform.
+        Initializes and configures the Quanser Aero platform.
 
         Parameters
         ----------
         id : int, optional
             The board identifier id number. Defaults to 0.
         hardware : int, optional
-            0 for virtual Aero2 (requires Quanser Interactive Labs), 1 for hardware Aero2. Defaults to 0.
+            0 for virtual Aero (requires Quanser Interactive Labs), 1 for hardware Aero. Defaults to 0.
         readMode : int, optional
             0 for immediate I/O, 1 for task-based I/O. Defaults to 1.
         frequency : int, optional
@@ -72,14 +72,14 @@ class Aero2():
         self.samples = HIL.INFINITE
         self.samples_to_read = 1
 
-        # select hardware or virtual Aero2
+        # select hardware or virtual Aero
         if self.hardware:
             boardIdentifier = self._id
         else:
             boardIdentifier = self._id+"@tcpip://localhost:18950"
         try:
-            # open the Aero2
-            self.card.open("quanser_aero2_usb", boardIdentifier)
+            # open the Aero
+            self.card.open("quanser_aero_usb", boardIdentifier)
             if self.card.is_valid():
                 # initialize encoder counts
                 counts = np.array([0, 0, 0, 0], dtype=np.float64)
@@ -97,7 +97,7 @@ class Aero2():
                                                             None, 0,
                                                             self.READ_OTHER_CHANNELS, len(self.READ_OTHER_CHANNELS))
 
-                    # set buffer overflow mode for either hardware or virtual Aero2
+                    # set buffer overflow mode for either hardware or virtual Aero
                     if self.hardware:
                         self.card.task_set_buffer_overflow_mode(self.readTask, BufferOverflowMode.OVERWRITE_ON_OVERFLOW)
                     else:
@@ -109,7 +109,7 @@ class Aero2():
             print(h.get_error_message())
 
     def read_analog_encoder_other_channels(self):
-        """This function reads sensor information from the 'analog', 'encoder' and 'other' channels of the Aero2.\n
+        """This function reads sensor information from the 'analog', 'encoder' and 'other' channels of the Aero.\n
 
         Returns
         -------
@@ -161,16 +161,16 @@ class Aero2():
         finally:
             self.motorCurrent = self.readAnalogBuffer
             self.motorPosition = 2*np.pi*self.readEncoderBuffer[0:2]/2048
-            self.pitchAngle = 2*np.pi*self.readEncoderBuffer[2]/2880
+            self.pitchAngle = 2*np.pi*self.readEncoderBuffer[2]/2048
             self.yawAngle = 2*np.pi*self.readEncoderBuffer[3]/4096
             self.gyroscope = self.readOtherBufer[0:3]
             self.accelerometer = self.readOtherBufer[3:6]
             self.motorSpeed = 2*np.pi*self.readOtherBufer[6:8]/2048
-            self.pitchRate = 2*np.pi*self.readOtherBufer[8]/2880
+            self.pitchRate = 2*np.pi*self.readOtherBufer[8]/2048
             self.yawRate = 2*np.pi*self.readOtherBufer[9]/4096
 
     def write_led(self, color=np.array([1, 0, 0], dtype=np.float64)):
-        """Use this to write LED values to the Aero2. \n
+        """Use this to write LED values to the Quanser Aero. \n
 
         Parameter
         ---------
@@ -188,7 +188,7 @@ class Aero2():
 
     def write_voltage(self, voltage0=0, voltage1=0):
         """
-        Writes voltage commands to the motors on the Aero2.
+        Writes voltage commands to the motors on the Quanser Aero.
 
         Parameters
         ----------
@@ -207,7 +207,7 @@ class Aero2():
 
     def terminate(self):
         """
-        Terminates the Aero2 card.
+        Terminates the Quanser Aero card.
 
         Notes
         -----
@@ -237,14 +237,14 @@ class Aero2():
 
         Returns
         -------
-        Aero2
+        Aero
             The current instance of the class.
         """
         return self
 
     def __exit__(self, type, value, traceback):
         """
-        Used for the `with` statement. Terminates the connection with the Aero2.
+        Used for the `with` statement. Terminates the connection with the Aero.
 
         Parameters
         ----------
