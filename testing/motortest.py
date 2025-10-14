@@ -72,16 +72,18 @@ try:
 		write_voltage(aero, 0, 0)
 		while True:
 			read_sensors(aero)
-			print(f"Motor speed: [{2*np.pi*readOtherBuffer[6]/2048:03.0f} {2*np.pi*readOtherBuffer[7]/2048:03.0f}] rad/S")
-			print(f"Motor current: [{readAnalogBuffer[0]:04.2f} {readAnalogBuffer[1]:04.2f}] A")
+			print(f"Motor speed: [{2*np.pi*readOtherBuffer[6]/2048: 04.0f} {2*np.pi*readOtherBuffer[7]/2048: 04.0f}] rad/s")
+			print(f"Motor current: [{readAnalogBuffer[0]: 06.3f} {readAnalogBuffer[1]: 06.3f}] A")
 			print("Insert motor commands (between -999 and 999) or 'q' to quit")
 			cmd = input()
 			if cmd=='q':
 				break
 			elif len(cmd) == 0:
+				time.sleep(2)
 				continue
 			elif not cmd.isdigit() and not (cmd[0]=='-' and cmd[1:].isdigit()):
 				print("Invalid command")
+				time.sleep(2)
 				continue
 			cmd = int(cmd)
 			write_voltage(aero, cmd, cmd)
@@ -93,6 +95,14 @@ try:
 	aero.write_other(WRITE_OTHER_CHANNELS, 3, red)
 	write_voltage(aero, 0, 0)
 	aero.close()
+
+except HILError as e:
+	try:
+		aero.close()
+	except:
+		pass
+	print("HIL Exception caught: ", e)
+	print(e.get_error_message())
 
 except Exception as e:
 	aero.write_other(WRITE_OTHER_CHANNELS, 3, red)

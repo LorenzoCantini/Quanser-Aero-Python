@@ -46,7 +46,7 @@ try:
 		
 		while True:
 			read_sensors(aero)
-			print(f"Pitch: {2*np.pi*readEncoderBuffer[2]/2048:06.2f}, Yaw: {2*np.pi*readEncoderBuffer[3]/4096:06.2f}")
+			print(f"Pitch: {2*np.pi*readEncoderBuffer[2]/2048: 06.2f}, Yaw: {2*np.pi*readEncoderBuffer[3]/4096: 06.2f}")
 			time.sleep(1)
 	
 	except KeyboardInterrupt:
@@ -55,7 +55,17 @@ try:
 	aero.write_other(WRITE_OTHER_CHANNELS, 3, red)
 	aero.close()
 
+except HILError as e:
+	try:
+		aero.close()
+	except:
+		pass
+	print("HIL Exception caught: ", e)
+	print(e.get_error_message())
+
 except Exception as e:
 	aero.write_other(WRITE_OTHER_CHANNELS, 3, red)
 	aero.close()
-	print(e)
+	print("Exception caught: ", e)
+	if hasattr(e, 'get_error_message'):
+		print(e.get_error_message())
