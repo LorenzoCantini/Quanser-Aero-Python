@@ -13,7 +13,7 @@ WRITE_DIGITAL_CHANNELS = np.array([0, 1], dtype=np.uint32)
 WRITE_OTHER_CHANNELS = np.array([11000, 11001, 11002], dtype=np.uint32)
 
 # motor
-MAX_MOTOR_INPUT = 999
+MAX_MOTOR_INPUT = 24
 
 red = np.array([1,0,0],dtype=float)
 green = np.array([0,1,0],dtype=float)
@@ -37,15 +37,14 @@ def read_sensors(device):
 
 def write_voltage(device, voltage0=0, voltage1=0):
     """
-DO NOT USE BEOFRE CHECKING 
-    Writes voltage commands to the motors on the Aero2.
+    Writes voltage commands to the motors on the Aero.
 
     Parameters
     ----------
     voltage0 : float
-        Voltage command sent to rotor 0. Must be between -999 and 999.
+        Voltage command sent to rotor 0. Must be between -24 and 24.
     voltage1 : float
-        Voltage command sent to rotor 1. Must be between -999 and 999.
+        Voltage command sent to rotor 1. Must be between -24 and 24.
     """
     try:
         writeAnalogBuffer = np.array([np.clip(voltage0, -MAX_MOTOR_INPUT, MAX_MOTOR_INPUT), np.clip(voltage1, -MAX_MOTOR_INPUT, MAX_MOTOR_INPUT)], dtype=np.float64)
@@ -76,9 +75,7 @@ try:
 		write_voltage(aero, 0, 0)
 		time.sleep(1)
 		read_sensors(aero)
-		while True:
-			print(f"Motor speed: {2*np.pi*aero.readOtherBuffer[6:8]/2048}\nPress ENTER to start motor tryout")
-			time.sleep(2)
+		input(f"Press ENTER to start motor tryout")
 
 	except KeyboardInterrupt:
 		pass
@@ -87,19 +84,63 @@ try:
 		write_voltage(aero, 0, 0)
 		while True:
 			read_sensors(aero)
-			print(f"Motor speed: {2*np.pi*aero.readOtherBuffer[6:8]/2048}\nInsert motor commands (between -999 and 999) or 'q' to quit")
+			print(f"Motor speed: [{2*np.pi*readOtherBuffer[6]/2048: 04.0f} {2*np.pi*readOtherBuffer[7]/2048: 04.0f}] rad/s")
+			print(f"Motor current: [{readAnalogBuffer[0]: 06.3f} {readAnalogBuffer[1]: 06.3f}] A")
+			print(f"Insert motor commands (integer between -{MAX_MOTOR_INPUT} and {MAX_MOTOR_INPUT}) or 'q' to quit")
 			cmd = input()
 			if cmd=='q':
 				break
 			elif not cmd.isdigit() and not (cmd[0]=='-' and cmd[1:].isdigit()):
 				print("Invalid command")
+				time.sleep(2)
 				continue
 			cmd = int(cmd)
-			write_voltage(aero, cmd, cmd)		
+			write_voltage(aero, cmd, cmd)
 			time.sleep(2)
 
 	except KeyboardInterrupt:
 		pass
+
+	try: 
+		write_voltage(aero, 0, 0)
+		i = +1 
+		cmd = 0
+		print("Running motor voltage ramp, press Ctrl-C to stop")
+		time.sleep(2)	
+			
+		while True:
+			cmd += i
+			read_sensors(aero)
+			print(f"Motor speed: [{2*np.pi*readOtherBuffer[6]/2048: 04.0f} {2*np.pi*readOtherBuffer[7]/2048: 04.0f}] rad/s")
+			print(f"Motor current: [{readAnalogBuffer[0]: 06.3f} {readAnalogBuffer[1]: 06.3f}] A")
+
+			write_voltage(aero, cmd, cmd)
+			if cmd>=MAX_MOTOR_INPUT:
+				i = -1
+			elif cmd<=-MAX_MOTOR_INPUT:
+				i = +1
+			time.sleep(2)
+
+	except KeyboardInterrupt:
+		pass
+
+	aero.write_other(WRITE_OTHER_CHANNELS, 3, red)
+	write_voltage(aero, 0, 0)
+	aero.close()
+
+except HILError as e:
+	try:
+		aero.close()
+	except:
+		pass
+	print("HIL Exception caught: ", e)
+	print(e.get_error_message())
+
+except Exception as e:
+	aero.write_other(WRITE_OTHER_CHANNELS, 3, red)
+	write_voltage(aero, 0, 0)
+	aero.close()
+	print("Exception caught: ", e)
 	
 	# try: 
 	# 	i=0
@@ -116,8 +157,4 @@ try:
 
 	# except KeyboardInterrupt:
 	# 	pass
-
-except Exception as e:
-	aero.write_other(WRITE_OTHER_CHANNELS, 3, red)
-	aero.close()
-	print(e)
+	
