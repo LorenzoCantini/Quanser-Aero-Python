@@ -193,12 +193,12 @@ class Aero():
         Parameters
         ----------
         voltage0 : float
-            Voltage command sent to rotor 0. Must be between -15 and 15.
+            Voltage command sent to rotor 0. Must be between -18 and 18.
         voltage1 : float
-            Voltage command sent to rotor 1. Must be between -15 and 15.
+            Voltage command sent to rotor 1. Must be between -18 and 18.
         """
         try:
-            self.writeAnalogBuffer = np.array([np.clip(voltage0, -15, 15), np.clip(voltage1, -15, 15)], dtype=np.float64)
+            self.writeAnalogBuffer = np.array([np.clip(voltage0, -18, 18), np.clip(voltage1, -18, 18)], dtype=np.float64)
 
             self.card.write_analog(self.WRITE_ANALOG_CHANNELS, len(self.WRITE_ANALOG_CHANNELS), self.writeAnalogBuffer)
 
