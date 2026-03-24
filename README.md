@@ -10,6 +10,13 @@ Quanser Aero is a learning tool developed and distributed by Quanser Consulting 
 
 This repository contains code for a Python interface to control Quanser Aero. 
 
+## Usage
+Copy [the Quanser Aero interface](quanseraero/aero.py) in your project and simply import it with
+
+```py
+from aero import Aero
+```
+
 ## Contributing
 
 You are very welcome to contribute to this project. Feel free to open an issue or pull request if you have any suggestions or bug reports.
