@@ -11,11 +11,27 @@ Quanser Aero is a learning tool developed and distributed by Quanser Consulting 
 This repository contains code for a Python interface to control Quanser Aero. 
 
 ## Usage
-Copy [the Quanser Aero interface](quanseraero/aero.py) in your project and simply import it with
+Download [our Quanser Aero interface](quanseraero/aero.py) in your project folder and simply import it with:
 
 ```py
 from aero import Aero
 ```
+
+Then use it in your code like this:
+```py
+with Aero() as aero:
+
+    aero.write_led(np.array([0, 1, 0], dtype=np.float64))
+
+    aero.read_analog_encoder_other_channels()
+
+    if aero.pitchAngle > 0:
+        aero.write_voltage(0, -10)
+```
+
+## Requirements
+
+To use this library, you need to install [numpy](https://numpy.org/) and the [Quanser Python API](https://docs.quanser.com/quarc/documentation/python/getting_started.html).
 
 ## Contributing
 
